@@ -455,7 +455,7 @@ proc initBuilders*(ctx: var Context) =
     discard # TODO
 
 
-proc initSource*(id: string, s: Source) =
+proc initSource*(ctx: Context, id: string, s: Source) =
   # if s.url.isSome:
   #   runtimeAssert s.url.get.len > 0, "source url is not specified for `" & id & "`"
   # elif s.urlCmd.isSome:
@@ -531,10 +531,21 @@ proc initSource*(id: string, s: Source) =
   else:
     s.buildPlan = some None
 
+  func addUsableVariant(src: Source, id: string) =
+    if src.usableVariants.isSome:
+      src.usableVariants.get.add id
+    else:
+      src.usableVariants = some @[id]
+    if src.variantParent.isSome:
+      addUsableVariant(src.variantParent.get, id)
+
+  if ctx.compatible(s) and ctx.fetchable(s):
+    addUsableVariant(s, s.compositeId)
+
   if s.variants.isSome:
     for (varId, varSrc) in s.variants.get.mpairs:
       varSrc.variantParent = some s
-      initSource(varId, varSrc)
+      ctx.initSource(varId, varSrc)
 
 
 proc init*(ctx: var Context, dontTouchAnything = false) =
@@ -547,7 +558,7 @@ proc init*(ctx: var Context, dontTouchAnything = false) =
   ctx.initExtractors
   ctx.initHashVerifiers
   for (id, src) in ctx.sources.mpairs:
-    initSource(id, src)
+    ctx.initSource(id, src)
   if not dontTouchAnything:
     withDir ctx.workDir.get:
       createDir varDir
