@@ -114,7 +114,7 @@ type
 
     origin*: Option[string]
     ## Origin is the file path or URL for the source.
-    ## It is derived by `origin`_.
+    ## It is derived by `origin` proc.
     url*: Option[string]
     ## A URL to the source.
     urlCmd*: Option[string]
@@ -231,7 +231,7 @@ type
     ## Source variants.
     usableVariants*: Option[StrSeq]
     ## Sequence of usable variant composite IDs.
-    ## This is set by the `usableVariants` iterator.
+    ## Set in `initSource` proc.
 
   Source* = ref SourceObj
 
